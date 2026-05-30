@@ -1,6 +1,7 @@
 package com.glauber.voting.infrastructure.boundary;
 
 import com.glauber.voting.application.boundary.SessionBoundary;
+import com.glauber.voting.application.exception.SessionException;
 import com.glauber.voting.domain.model.Agenda;
 import com.glauber.voting.domain.model.Session;
 import com.glauber.voting.infrastructure.persistence.entity.AgendaEntity;
@@ -58,7 +59,7 @@ public class SessionBoundaryImpl implements SessionBoundary {
     public Session findById(Long id) {
         Objects.requireNonNull(id, "id must not be null");
         SessionEntity entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Session not found: " + id));
+                .orElseThrow(() -> new SessionException("Session not found: " + id));
 
         List<Agenda> agendas = entity.getAgendas().stream()
                 .map(a -> new Agenda(a.getId(), a.getTitle()))

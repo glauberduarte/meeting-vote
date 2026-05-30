@@ -1,6 +1,7 @@
 package com.glauber.voting.infrastructure.controller.v1;
 
 import com.glauber.voting.application.dto.SessionDto;
+import com.glauber.voting.application.exception.SessionException;
 import com.glauber.voting.application.usecase.SessionUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,8 +49,12 @@ public class SessionController {
             content = @Content(schema = @Schema(implementation = SessionDto.AgendasResponse.class)))
     public ResponseEntity<SessionDto.AgendasResponse> getSessionAgendas(
             @Parameter(description = "ID da sessão/pauta") @PathVariable Long id) {
-        SessionDto.AgendasResponse response = sessionUseCase.getAgendas(id);
-        return ResponseEntity.ok(response);
+        try {
+            SessionDto.AgendasResponse response = sessionUseCase.getAgendas(id);
+            return ResponseEntity.ok(response);
+        } catch (SessionException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
 }

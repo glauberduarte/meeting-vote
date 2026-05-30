@@ -256,6 +256,52 @@ curl -X POST http://localhost:8080/api/v1/session \
 }
 ```
 
+#### Exemplo de chamada para votar em uma pauta
+
+```cmd
+curl -X POST http://localhost:8080/api/v1/agendas/1/votes \
+-H "Content-Type: application/json" \
+-d '{
+  "voteChoice": "SIM",
+  "cpf": "19839091069"
+}'
+```
+
+#### Exemplo de resposta para votar em uma pauta
+
+```json
+{
+  "message": "Voto registrado com sucesso"
+}
+```
+
+#### Exemplo de chamada para contabilizar votos e resultado da votação
+
+```cmd
+curl -X GET http://localhost:8080/api/v1/session/1/agendas
+```
+
+#### Exemplo de resposta para contabilizar votos e resultado da votação
+
+```json
+{
+  "agendas": [
+    {
+      "id": 1,
+      "title": "Aprovação do Balanço Financeiro 2025",
+      "quantityVotes": 10,
+      "percentageVotes": 25
+    },
+    {
+      "id": 2,
+      "title": "Aprovação do Balanço Financeiro 2026",
+      "quantityVotes": 20,
+      "percentageVotes": 75
+    }
+  ]
+}
+```
+
 ### Ordem de implementação
 
 - Criação do Repositorio
@@ -277,9 +323,9 @@ curl -X POST http://localhost:8080/api/v1/session \
     - Criação de objetos de Dominio, persistencia e testes de Banco de dados
     - ajustes swagger
     - documentar estrategia de versionamento
-- Revisão documentação e testes
-- Tratar performance e monitoramento
 - Integração com sistemas externos de validação de CPF
-    - teste: https://www.cpfhub.io/blog/melhores-apis-gratuitas-consulta-cpf-desenvolvedores
-    - prod: https://user-info.herokuapp.com/users/{cpf}
+  - teste: https://www.cpfhub.io/blog/melhores-apis-gratuitas-consulta-cpf-desenvolvedores
+  - prod: https://user-info.herokuapp.com/users/{cpf}
+- Tratar performance (cache local) e monitoramento
+- Revisão documentação e testes unitários e documentar testes de homologação
 

@@ -3,6 +3,8 @@ package com.glauber.voting.domain.model;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public class Session {
@@ -24,13 +26,14 @@ public class Session {
         this.title = title;
         this.agendas = agendas;
         this.durationInMinutes = durationInMinutes;
-        this.openingTime = LocalDateTime.now();
+        // Use UTC-3 consistently for all LocalDateTime calculations
+        this.openingTime = ZonedDateTime.now(ZoneOffset.ofHours(-3)).toLocalDateTime();
         // Caso não seja informado o tempo, a sessão dura 1 minuto
         this.closingTime = this.openingTime.plusMinutes(durationInMinutes != null ? durationInMinutes : 1);
     }
 
     public boolean isOpen() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = ZonedDateTime.now(ZoneOffset.ofHours(-3)).toLocalDateTime();
         return now.isAfter(openingTime) && now.isBefore(closingTime);
     }
 

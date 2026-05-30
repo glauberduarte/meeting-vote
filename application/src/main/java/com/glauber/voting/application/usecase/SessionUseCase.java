@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 @Service
 public class SessionUseCase {
 
-    private final SessionBoundary agendaBoundary;
+    private final SessionBoundary sessionBoundary;
 
-    public SessionUseCase(SessionBoundary agendaBoundary) {
-        this.agendaBoundary = agendaBoundary;
+    public SessionUseCase(SessionBoundary sessionBoundary) {
+        this.sessionBoundary = sessionBoundary;
     }
 
     public SessionDto.Response execute(SessionDto.Request request) {
@@ -25,7 +25,7 @@ public class SessionUseCase {
         // 2. Executa possíveis regras de negócio do caso de uso
 
         // 3. Salva através do Boundary (Abstração da infraestrutura)
-        Session savedSession = agendaBoundary.save(session);
+        Session savedSession = sessionBoundary.save(session);
 
         // 4. Retorna o DTO de resposta esperado pela camada de entrega
         return SessionDto.Response.builder()
@@ -37,7 +37,7 @@ public class SessionUseCase {
     }
 
     public SessionDto.AgendasResponse getAgendas(Long sessionId) {
-        Session session = agendaBoundary.findById(sessionId);
+        Session session = sessionBoundary.findById(sessionId);
 
         List<AgendaDto.Response> agendas = session.getAgendas().stream()
                 .map(a -> AgendaDto.Response.builder().id(a.getId()).title(a.getTitle()).build())
