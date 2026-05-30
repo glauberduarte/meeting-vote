@@ -54,6 +54,7 @@ vai interagir com o sistema. A aplicação cliente não faz parte da avaliação
 - Path: /api/v1/agendas
 - Request Body: {"title": "Pauta 1"}
 - Response Body:
+
 ```json
 {
   "id": 1,
@@ -74,13 +75,25 @@ vai interagir com o sistema. A aplicação cliente não faz parte da avaliação
   "agendas": [
     {
       "id": 1,
-      "name": "Pauta 1"
+      "title": "Pauta 1"
     },
     {
       "id": 2,
-      "name": "Pauta 2"
+      "title": "Pauta 2"
     }
   ]
+}
+```
+
+Validar alteração para suportar a estrutura
+
+```json
+{
+  "campo1": "valor1",
+  "campo2": 123,
+  "idCampoTexto": "Texto",
+  "idCampoNumerico": 999,
+  "idCampoData": "01/01/2000"
 }
 ```
 
@@ -94,11 +107,11 @@ vai interagir com o sistema. A aplicação cliente não faz parte da avaliação
   "agendas": [
     {
       "id": 1,
-      "name": "Pauta 1"
+      "title": "Pauta 1"
     },
     {
       "id": 2,
-      "name": "Pauta 2"
+      "title": "Pauta 2"
     }
   ]
 }
@@ -112,7 +125,6 @@ vai interagir com o sistema. A aplicação cliente não faz parte da avaliação
 
 ```json
 {
-  "id": 999,
   "voteChoice": "SIM",
   "cpf": "19839091069"
 }
@@ -130,7 +142,7 @@ vai interagir com o sistema. A aplicação cliente não faz parte da avaliação
   "agendas": [
     {
       "id": 1,
-      "name": "Pauta 1",
+      "title": "Pauta 1",
       "quantityVotes": 10,
       "percentageVotes": 25
     },
@@ -146,3 +158,66 @@ vai interagir com o sistema. A aplicação cliente não faz parte da avaliação
   }
 }
 ```
+
+## Swagger
+
+  http://localhost:8080/swagger-ui/index.html
+
+## Execução Local
+
+#### 1. Subir banco local:
+```cmd
+$ docker compose up -d
+```
+
+#### 2. Rodar aplicação localmente:
+```cmd
+$ ./gradlew bootRun --args='--spring.profiles.active=dev'
+```
+
+#### Exemplo de chamada para criar uma nova pauta
+```cmd
+curl -X POST http://localhost:8080/api/v1/agendas \
+-H "Content-Type: application/json" \
+-d '{"title": "Aprovação do Balanço Financeiro 2025"}'
+```
+
+#### Exemplo de resposta para criação de nova pauta
+```json
+{
+  "id": 1,
+  "title": "Aprovação do Balanço Financeiro 2025"
+}
+```
+
+#### Exemplo de executar testes para AgendaControllerTest
+```cmd
+./gradlew :infrastructure:test --tests "com.coop.voting.infrastructure.controller.v1.AgendaControllerTest"
+```
+
+### Ordem de implementação
+
+- Criação do Repositorio
+- Configuração da infraestrutura básica
+- Pautas
+    - Criação de objetos de Dominio, persistencia e testes de Banco de dados
+    - criação de pautas
+    - ajustes swagger
+    - documentar estrategia de versionamento
+- Seção
+    - Criação de objetos de Dominio, persistencia e testes de Banco de dados
+    - criar nova seção associando pautas
+    - buscar pautas por seção
+    - ajustes swagger
+    - documentar estrategia de versionamento
+- Votação
+    - votação de pautas
+    - Contabilizar resultados
+    - Criação de objetos de Dominio, persistencia e testes de Banco de dados
+    - ajustes swagger
+    - documentar estrategia de versionamento
+- Tratar performance e monitoramento
+- Integração com sistemas externos de validação de CPF
+    - teste: https://www.cpfhub.io/blog/melhores-apis-gratuitas-consulta-cpf-desenvolvedores
+    - prod: https://user-info.herokuapp.com/users/{cpf}
+

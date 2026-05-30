@@ -1,3 +1,12 @@
 spring:
   application:
     name: meeting-vote
+  profiles:
+    active:
+  jackson:
+    default-property-inclusion: non_null
+  jpa:
+    open-in-view: false
+
+server:
+  port: 8080
