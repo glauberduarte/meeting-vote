@@ -1,0 +1,5 @@
+rootProject.name = 'meeting-vote'
+
+include 'application'
+include 'domain'
+include 'infrastructure'
