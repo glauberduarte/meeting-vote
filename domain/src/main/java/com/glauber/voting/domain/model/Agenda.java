@@ -1,7 +1,11 @@
 package com.glauber.voting.domain.model;
 
+import lombok.Getter;
+
 public class Agenda {
+    @Getter
     private Long id;
+    @Getter
     private String title;
 
     public Agenda(Long id, String title) {
@@ -9,11 +13,4 @@ public class Agenda {
         this.title = title;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
 }

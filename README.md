@@ -161,21 +161,24 @@ Validar alteração para suportar a estrutura
 
 ## Swagger
 
-  http://localhost:8080/swagger-ui/index.html
+http://localhost:8080/swagger-ui/index.html
 
 ## Execução Local
 
 #### 1. Subir banco local:
+
 ```cmd
 $ docker compose up -d
 ```
 
 #### 2. Rodar aplicação localmente:
+
 ```cmd
 $ ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 #### Exemplo de chamada para criar uma nova pauta
+
 ```cmd
 curl -X POST http://localhost:8080/api/v1/agendas \
 -H "Content-Type: application/json" \
@@ -183,6 +186,7 @@ curl -X POST http://localhost:8080/api/v1/agendas \
 ```
 
 #### Exemplo de resposta para criação de nova pauta
+
 ```json
 {
   "id": 1,
@@ -191,8 +195,65 @@ curl -X POST http://localhost:8080/api/v1/agendas \
 ```
 
 #### Exemplo de executar testes para AgendaControllerTest
+
 ```cmd
 ./gradlew :infrastructure:test --tests "com.coop.voting.infrastructure.controller.v1.AgendaControllerTest"
+```
+
+#### Exemplo de chamada para abrir nova seção de votação
+
+```cmd
+curl -X POST http://localhost:8080/api/v1/session \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "Assembleia Geral de Investimentos",
+  "durationInMinutes": 5,
+  "agendas": [
+      {
+        "id": 1,
+        "title": "Pauta 1"
+      },
+      {
+        "id": 2,
+        "title": "Pauta 2"
+      }
+  ]
+}'
+```
+
+#### Exemplo de resposta para abrir nova seção de votação
+
+```json
+{
+  "id": 1,
+  "title": "Assembleia Geral de Investimentos",
+  "openingTime": "2024-06-30T14:00:00Z",
+  "closingTime": "2024-06-30T14:05:00Z"
+}
+```
+
+
+#### Exemplo de chamada para buscar pautas por seção
+
+```cmd
+  curl -X GET http://localhost:8080/api/v1/session/1/agendas
+```
+
+#### Exemplo de resposta para buscar pautas por seção
+
+```json
+{
+  "agendas": [
+    {
+      "id": 1,
+      "title": "Aprovação do Balanço Financeiro 2025"
+    },
+    {
+      "id": 2,
+      "title": "Aprovação do Balanço Financeiro 2025"
+    }
+  ]
+}
 ```
 
 ### Ordem de implementação
@@ -216,6 +277,7 @@ curl -X POST http://localhost:8080/api/v1/agendas \
     - Criação de objetos de Dominio, persistencia e testes de Banco de dados
     - ajustes swagger
     - documentar estrategia de versionamento
+- Revisão documentação e testes
 - Tratar performance e monitoramento
 - Integração com sistemas externos de validação de CPF
     - teste: https://www.cpfhub.io/blog/melhores-apis-gratuitas-consulta-cpf-desenvolvedores
