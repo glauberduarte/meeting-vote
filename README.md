@@ -164,14 +164,16 @@ curl -X GET http://localhost:8080/api/v1/vote/1/results
     {
       "id": 1,
       "title": "Aprovação do Balanço Financeiro 2025",
-      "quantityVotes": 10,
-      "percentageVotes": 25
+      "totalVotes": 10,
+      "yesVotes": 5,
+      "noVotes": 5
     },
     {
       "id": 2,
       "title": "Aprovação do Balanço Financeiro 2026",
-      "quantityVotes": 20,
-      "percentageVotes": 75
+      "totalVotes": 20,
+      "yesVotes": 10,
+      "noVotes": 10
     }
   ]
 }
