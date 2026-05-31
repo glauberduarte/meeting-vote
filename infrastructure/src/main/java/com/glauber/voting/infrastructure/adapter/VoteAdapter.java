@@ -1,4 +1,4 @@
-package com.glauber.voting.infrastructure.boundary;
+package com.glauber.voting.infrastructure.adapter;
 
 import com.glauber.voting.application.boundary.VoteBoundary;
 import com.glauber.voting.application.exception.SessionException;
@@ -14,28 +14,25 @@ import com.glauber.voting.domain.model.Agenda;
 import com.glauber.voting.domain.model.VoteChoice;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-
 @Component
 @Transactional
-public class VoteBoundaryImpl implements VoteBoundary {
+public class VoteAdapter implements VoteBoundary {
 
     private final VoteRepository repository;
     private final SessionBoundary sessionBoundary;
     private final CpfValidator cpfValidator;
 
-    public VoteBoundaryImpl(VoteRepository repository, SessionBoundary sessionBoundary, CpfValidator cpfValidator) {
+    public VoteAdapter(VoteRepository repository, SessionBoundary sessionBoundary, CpfValidator cpfValidator) {
         this.repository = repository;
         this.sessionBoundary = sessionBoundary;
         this.cpfValidator = cpfValidator;
@@ -56,7 +53,6 @@ public class VoteBoundaryImpl implements VoteBoundary {
             throw new SessionException("Assembléia finalizada, não pode mais receber votos.");
         }
 
-        // Mapeia Domínio -> Entidade JPA
         VoteEntity entityToSave = VoteEntity.builder()
                 .agendaId(vote.getAgendaId())
                 .affiliatedId(vote.getAffiliatedId())
@@ -64,11 +60,13 @@ public class VoteBoundaryImpl implements VoteBoundary {
                 .choice(vote.getChoice().toString())
                 .build();
 
-        // Persiste de fato utilizando o Spring JPA
         VoteEntity savedEntity = repository.save(entityToSave);
 
-        // Mapeia Entidade JPA -> Domínio
-        return new Vote(savedEntity.getId(), savedEntity.getSessionId(), savedEntity.getAgendaId(), savedEntity.getAffiliatedId(), vote.getChoice());
+        return new Vote(savedEntity.getId(),
+                savedEntity.getSessionId(),
+                savedEntity.getAgendaId(),
+                savedEntity.getAffiliatedId(),
+                vote.getChoice());
     }
 
     @Override
@@ -113,14 +111,14 @@ public class VoteBoundaryImpl implements VoteBoundary {
             accumulator.put(aid, current);
         }
 
-        return accumulator.values().stream().collect(Collectors.toList());
+        return new ArrayList<>(accumulator.values());
     }
 
     private void validateCPF(String cpf) {
         try {
             cpfValidator.isValid(cpf);
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("CPF inválido.");
+            throw new CpfValidatorException("CPF inválido.");
         }
     }
 }

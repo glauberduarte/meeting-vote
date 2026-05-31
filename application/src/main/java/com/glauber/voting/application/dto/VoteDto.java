@@ -1,5 +1,7 @@
 package com.glauber.voting.application.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +16,11 @@ public class VoteDto {
     @AllArgsConstructor
     @Builder
     public static class Request {
+        @NotNull(message = "A pauta não pode estar em branco")
         private Long agendaId;
+        @NotBlank(message = "O CPF não pode estar em branco")
         private String cpf;
+        @NotBlank(message = "Deve-se escolher SIM/NÃO para o voto")
         private String choice; // sim ou não
     }
 

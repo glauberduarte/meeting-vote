@@ -15,12 +15,12 @@ public class AgendaUseCase {
     }
 
     public AgendaDto.Response execute(AgendaDto.Request request) {
-        // 1. Converte o DTO de entrada para uma Entidade de Domínio
+        // Converte o DTO de entrada para uma Entidade de Domínio
         Agenda agenda = new Agenda(null, request.getTitle());
 
-        // 2. Executa possíveis regras de negócio do caso de uso
+        // Executa possíveis regras de negócio do caso de uso
 
-        // 3. Salva através do Boundary (Abstração da infraestrutura)
+        // Salva através do Boundary (Abstração da infraestrutura)
         Agenda savedAgenda = agendaBoundary.save(agenda);
 
         // 4. Retorna o DTO de resposta esperado pela camada de entrega

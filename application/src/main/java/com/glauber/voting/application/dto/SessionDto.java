@@ -1,6 +1,9 @@
 package com.glauber.voting.application.dto;
 
 import com.glauber.voting.domain.model.Agenda;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,14 +13,12 @@ import java.util.List;
 public class SessionDto {
 
     @Data
-    public static class OpenRequest {
-        private Integer durationInMinutes;
-    }
-
-    @Data
     public static class Request {
+        @NotBlank(message = "O título da assembléia não pode estar em branco")
         private String title;
+        @NotNull(message = "O tempo de duração da assembléia não pode estar em branco")
         private Integer durationInMinutes;
+        @NotEmpty(message = "Deve haver ao menos uma pauta para a assembléia")
         private List<AgendaDto.Response> agendas;
     }
 

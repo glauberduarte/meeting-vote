@@ -21,10 +21,6 @@ public class VoteUseCase {
     }
 
     public VoteDto.Response execute(Long sessionId, VoteDto.Request request) {
-        // Valida e normaliza cpf: remove caracteres não numéricos e valida CPF dígitos
-        if (request.getCpf() == null) {
-            throw new IllegalArgumentException("CPF não pode ser nulo.");
-        }
         String normalizedCPF = request.getCpf().replaceAll("\\D+", "");
         if (!normalizedCPF.matches("\\d{11}")) {
             throw new IllegalArgumentException("CPF inválido: deve conter 11 dígitos");
@@ -34,19 +30,6 @@ public class VoteUseCase {
         VoteChoice voteChoice = VoteChoice.fromString(request.getChoice());
         Vote vote = new Vote(null, sessionId, request.getAgendaId(), normalizedCPF, voteChoice);
 
-        // Validações básicas
-        Objects.requireNonNull(vote, "vote não pode ser vazio ou nulo");
-        if (vote.getAgendaId() == null) {
-            throw new IllegalArgumentException("Vote agendaId não pode ser vazio ou nulo");
-        }
-
-        if (vote.getSessionId() == null) {
-            throw new IllegalArgumentException("Vote sessionId não pode ser vazio ou nulo");
-        }
-
-        if (vote.getAffiliatedId() == null) {
-            throw new IllegalArgumentException("CPF não pode ser vazio ou nulo");
-        }
         // Persiste via Boundary
         Vote saved = voteBoundary.save(vote);
 

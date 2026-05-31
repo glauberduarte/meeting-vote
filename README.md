@@ -289,7 +289,7 @@ curl -X POST http://localhost:8080/api/v1/vote/1 \
 #### Exemplo de chamada para contabilizar votos e resultado da votação
 
 ```cmd
-curl -X GET http://localhost:8080/api/v1/session/1/agendas
+curl -X GET http://localhost:8080/api/v1/vote/1/results
 ```
 
 #### Exemplo de resposta para contabilizar votos e resultado da votação
@@ -312,6 +312,13 @@ curl -X GET http://localhost:8080/api/v1/session/1/agendas
   ]
 }
 ```
+
+### Evolução do projeto - Performance
+
+Com a ideia de sermos capaz de lidarmos com centenas de milhares de votos, optamos por seguir três estratégias:
+- Utilização do webflux de forma a termos respostas não bloqueantes.
+- Utilização de cache local para armazenar os votos e estado da assembleia e evitar consultas frequentes ao banco de dados
+- Utilização de batch em banco de dados com JdbcTemplate e ON CONFLICT para inserção de votos, evitando bloqueios e lentidão em cenários de alta concorrência.
 
 ### Ordem de implementação
 
@@ -337,6 +344,6 @@ curl -X GET http://localhost:8080/api/v1/session/1/agendas
 - Integração com sistemas externos de validação de CPF
   - teste: https://www.cpfhub.io/blog/melhores-apis-gratuitas-consulta-cpf-desenvolvedores
   - prod: https://user-info.herokuapp.com/users/{cpf}
-- Tratar performance (cache local) e monitoramento
+- Tratar performance (cache local & webflux)
 - Revisão documentação, testes unitários, padronização de mensagens de erro, e documentar testes de homologação
 
