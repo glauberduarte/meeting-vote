@@ -31,13 +31,13 @@ class VoteControllerTest {
     @DisplayName("Deve retornar warning quando sessão ainda não finalizada")
     void shouldReturnWarningWhenSessionNotFinished() throws Exception {
         Mockito.when(voteUseCase.getResults(anyLong()))
-                .thenThrow(new SessionException("Sessão ainda não finalizada"));
+                .thenThrow(new SessionException("session.already_open", "Sessão ainda não finalizada"));
 
         mockMvc.perform(get("/api/v1/vote/1/results")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.warning").value("Sessão ainda não finalizada"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Sessão ainda não finalizada"));
     }
 }
 

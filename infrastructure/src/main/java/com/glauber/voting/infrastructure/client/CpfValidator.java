@@ -47,16 +47,16 @@ public class CpfValidator {
             if (ABLE_TO_VOTE.equals(status.asText())) {
                 System.out.println("CPF válido para votar: " + cpf);
             } else if (UNABLE_TO_VOTE.equals(status.asText())) {
-                throw new CpfValidatorException("CPF não pode executar a operação: " + cpf);
+                throw new CpfValidatorException("vote.cpf_unable_to_vote", "CPF não pode executar a operação: " + cpf, cpf);
             }
         }
 
         if (success != null && !success.asBoolean()) {
             JsonNode error = root.get("error");
             if (error != null) {
-                throw new CpfValidatorException(error.findValue("message").asText());
+                throw new CpfValidatorException("empty", error.findValue("message").asText());
             }
-            throw new CpfValidatorException("Dados do CPF não encontrados: " + cpf);
+            throw new CpfValidatorException("vote.cpf_not_found", "Dados do CPF não encontrados: " + cpf, cpf);
         }
     }
 }

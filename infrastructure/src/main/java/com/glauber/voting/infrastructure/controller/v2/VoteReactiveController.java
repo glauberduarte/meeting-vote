@@ -29,23 +29,19 @@ public class VoteReactiveController {
     }
 
     @PostMapping("/{id}")
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Registrar um voto (Reativo)", description = "Registra um voto de forma assíncrona não-bloqueante")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Voto aceito e enfileirado com sucesso",
                     content = @Content(schema = @Schema(implementation = VoteDto.Response.class))),
-            @ApiResponse(responseCode = "400", description = "Erro de validação ou regra de negócio", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Erro de validação ou regra de negócio", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sessão não encontrada", content = @Content)
     })
-    public Mono<ResponseEntity<?>> submitVote(
+    public Mono<VoteDto.Response> submitVote(
             @Parameter(description = "ID da sessão") @PathVariable Long id,
-            @Valid @RequestBody(required = true) VoteDto.Request request) {
+            @Valid @RequestBody VoteDto.Request request) {
 
-        return voteReactiveUseCase.execute(id, request)
-                .<ResponseEntity<?>>map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response))
-                // Captura os erros reativos e converte no formato HTTP
-                .onErrorResume(ex -> {
-                    java.util.Map<String, String> body = Collections.singletonMap("warning", ex.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body));
-                });
+        return voteReactiveUseCase.execute(id, request);
     }
 }
 

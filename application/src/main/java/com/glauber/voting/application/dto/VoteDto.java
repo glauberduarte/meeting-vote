@@ -2,6 +2,7 @@ package com.glauber.voting.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class VoteDto {
         @NotNull(message = "A pauta não pode estar em branco")
         private Long agendaId;
         @NotBlank(message = "O CPF não pode estar em branco")
+        @Pattern(regexp = "^\\d{11}$", message = "CPF inválido: deve conter 11 dígitos")
         private String cpf;
         @NotBlank(message = "Deve-se escolher SIM/NÃO para o voto")
         private String choice; // sim ou não

@@ -1,9 +1,7 @@
 package com.glauber.voting.infrastructure.controller.v1;
 
 import com.glauber.voting.application.dto.VoteDto;
-import com.glauber.voting.application.exception.SessionException;
 import com.glauber.voting.application.usecase.VoteUseCase;
-import com.glauber.voting.infrastructure.exception.CpfValidatorException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,10 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/v1/vote")
@@ -30,39 +26,27 @@ public class VoteController {
     }
 
     @PostMapping("/{id}")
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Registrar um voto", description = "Registra um voto para uma pauta dentro de uma sessão")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Voto registrado com sucesso",
+            @ApiResponse(responseCode = "201", description = "Voto registado com sucesso",
                     content = @Content(schema = @Schema(implementation = VoteDto.Response.class))),
-            @ApiResponse(responseCode = "404", description = "Sessão ou pauta não encontrada", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Erro de regra de negócio ou validação", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sessão não encontrada", content = @Content)
     })
-    public ResponseEntity<?> submitVote(
+    public VoteDto.Response submitVote(
             @Parameter(description = "ID da sessão") @PathVariable Long id,
-            @Valid @RequestBody(required = true) VoteDto.Request request) {
+            @Valid @RequestBody VoteDto.Request request) {
 
-        try {
-            VoteDto.Response response = voteUseCase.execute(id, request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException | CpfValidatorException | SessionException ex) {
-            java.util.Map<String, String> body = Collections.singletonMap("warning", ex.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
-        }
+            return voteUseCase.execute(id, request);
     }
 
     @GetMapping("/{id}/results")
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Contabilizar resultados", description = "Retorna a contabilização de votos por pauta em uma sessão")
-    @ApiResponse(responseCode = "200", description = "Sucesso",
-            content = @Content(schema = @Schema(implementation = VoteDto.ResultsResponse.class)))
-    public ResponseEntity<?> getResults(
+    public VoteDto.ResultsResponse getResults(
             @Parameter(description = "ID da sessão") @PathVariable Long id) {
-        try {
-            VoteDto.ResultsResponse response = voteUseCase.getResults(id);
-            return ResponseEntity.ok(response);
-        } catch (SessionException ex) {
-            // Retorna um warning informando que a sessão ainda não foi finalizada
-            java.util.Map<String, String> body = Collections.singletonMap("warning", ex.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-        }
+        return voteUseCase.getResults(id);
     }
 }
 

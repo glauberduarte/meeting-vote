@@ -45,12 +45,12 @@ public class VoteAdapter implements VoteBoundary {
 
         boolean affiliateAlreadyVoted = repository.existsByAffiliatedIdAndSessionIdAndAgendaId(vote.getAffiliatedId(), vote.getSessionId(), vote.getAgendaId());
         if (affiliateAlreadyVoted) {
-            throw new CpfValidatorException("Associado já votou nessa pauta e assembleia.");
+            throw new CpfValidatorException("vote.cpf_already_voted", "Associado já votou nessa pauta e assembleia.", vote.getAffiliatedId());
         }
 
         Session session = sessionBoundary.findById(vote.getSessionId());
         if (!session.isOpen()) {
-            throw new SessionException("Assembléia finalizada, não pode mais receber votos.");
+            throw new SessionException("session.already_closed", "Assembléia finalizada, não pode mais receber votos.", session.getClosingTime());
         }
 
         VoteEntity entityToSave = VoteEntity.builder()
@@ -71,12 +71,10 @@ public class VoteAdapter implements VoteBoundary {
 
     @Override
     public List<VoteResult> countResultsBySession(Long sessionId) {
-        Objects.requireNonNull(sessionId, "sessionId não pode ser nulo.");
-
         Session session = sessionBoundary.findById(sessionId);
         // Se a sessão ainda não foi finalizada, lança exceção para sinalizar warning
         if (session.isOpen()) {
-            throw new SessionException("Sessão ainda não finalizada");
+            throw new SessionException("session.already_open", "Sessão ainda não finalizada", session.getClosingTime());
         }
 
         // Buscar todos os votos das agendas da sessão
@@ -118,7 +116,7 @@ public class VoteAdapter implements VoteBoundary {
         try {
             cpfValidator.isValid(cpf);
         } catch (IOException | InterruptedException e) {
-            throw new CpfValidatorException("CPF inválido.");
+            throw new CpfValidatorException("vote.cpf_invalid","CPF inválido.");
         }
     }
 }

@@ -54,9 +54,8 @@ public class SessionAdapter implements SessionBoundary {
 
     @Override
     public Session findById(Long id) {
-        Objects.requireNonNull(id, "id não pode ser nulo.");
         SessionEntity entity = repository.findById(id)
-                .orElseThrow(() -> new SessionException("Session not found: " + id));
+                .orElseThrow(() -> new SessionException("session.not_found", "Session não encontrada: " + id, id));
 
         List<Agenda> agendas = entity.getAgendas().stream()
                 .map(a -> new Agenda(a.getId(), a.getTitle()))

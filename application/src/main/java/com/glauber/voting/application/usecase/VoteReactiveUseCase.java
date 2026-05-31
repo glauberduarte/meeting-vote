@@ -6,15 +6,12 @@ import com.glauber.voting.application.dto.VoteDto;
 import com.glauber.voting.application.exception.SessionException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Service
 public class VoteReactiveUseCase {
-    private final SessionBoundary sessionBoundary;
     private final VoteReactiveBoundary voteReactiveBoundary;
 
-    public VoteReactiveUseCase(SessionBoundary sessionBoundary, VoteReactiveBoundary voteReactiveBoundary) {
-        this.sessionBoundary = sessionBoundary;
+    public VoteReactiveUseCase(VoteReactiveBoundary voteReactiveBoundary) {
         this.voteReactiveBoundary = voteReactiveBoundary;
     }
 
@@ -26,17 +23,17 @@ public class VoteReactiveUseCase {
         return voteReactiveBoundary.hasVoted(agendaId, sessionId, cpf)
                 .flatMap(alreadyVoted -> {
                     if (alreadyVoted) {
-                        return Mono.error(new SessionException("Este associado já votou nesta pauta dentro desta sessão."));
+                        return Mono.error(new SessionException("vote.cpf_already_voted", "Este associado já votou nesta pauta dentro desta sessão.", cpf));
                     }
 
                     // Busca sessão do cache
                     return voteReactiveBoundary.getSession(sessionId)
-                            .switchIfEmpty(Mono.error(new SessionException("Sessão não encontrada.")));
+                            .switchIfEmpty(Mono.error(new SessionException("session.not_found", "Sessão não encontrada.", sessionId)));
                 })
                 .flatMap(session -> {
                     // Verifica se ainda é possível realizar votação
                     if (!session.isOpen()) {
-                        return Mono.error(new SessionException("Assembléia finalizada, não pode mais receber votos."));
+                        return Mono.error(new SessionException("session.already_closed", "Assembléia finalizada, não pode mais receber votos.", session.getClosingTime()));
                     }
 
                     // Se a sessão está aberta, dispara a validação reativa do CPF

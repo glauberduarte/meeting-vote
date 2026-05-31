@@ -23,12 +23,6 @@ public class SessionUseCase {
         // Converte o DTO de entrada para uma Entidade de Domínio
         Session session = new Session(null, request.getTitle(), SessionDto.toDomain(request.getAgendas()), request.getDurationInMinutes(), null,null);
 
-        // Validações básicas
-        Objects.requireNonNull(session, "session não pode ser nulo.");
-        if (session.getTitle() == null || session.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Session title não pode ser vazio.");
-        }
-
         // Salva através do Boundary (Abstração da infraestrutura)
         Session savedSession = sessionBoundary.save(session);
 

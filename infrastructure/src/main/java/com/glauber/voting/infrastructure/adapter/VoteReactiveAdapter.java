@@ -87,7 +87,7 @@ public class VoteReactiveAdapter implements VoteReactiveBoundary {
                     } catch (CpfValidatorException ex) {
                         throw ex;
                     } catch (Exception ex) {
-                        throw new CpfValidatorException("Falha na comunicação com o validador de CPF."+ ex.getMessage());
+                        throw new CpfValidatorException("vote.validator_error", "Falha na comunicação com o validador de CPF."+ ex.getMessage());
                     }
                 })
                 // Desvia essa execução bloqueante para Threads secundárias do Spring,

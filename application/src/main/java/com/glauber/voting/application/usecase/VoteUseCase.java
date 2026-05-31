@@ -21,19 +21,11 @@ public class VoteUseCase {
     }
 
     public VoteDto.Response execute(Long sessionId, VoteDto.Request request) {
-        String normalizedCPF = request.getCpf().replaceAll("\\D+", "");
-        if (!normalizedCPF.matches("\\d{11}")) {
-            throw new IllegalArgumentException("CPF inválido: deve conter 11 dígitos");
-        }
-
-        // Converte DTO para domínio
         VoteChoice voteChoice = VoteChoice.fromString(request.getChoice());
-        Vote vote = new Vote(null, sessionId, request.getAgendaId(), normalizedCPF, voteChoice);
+        Vote vote = new Vote(null, sessionId, request.getAgendaId(), request.getCpf(), voteChoice);
 
-        // Persiste via Boundary
         Vote saved = voteBoundary.save(vote);
 
-        // Constrói DTO de resposta
         return VoteDto.Response.builder()
                 .id(saved.getId())
                 .sessionId(saved.getSessionId())
