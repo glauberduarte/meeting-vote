@@ -1,11 +1,22 @@
 package com.glauber.voting.infrastructure.persistence.entity;
 
-import com.glauber.voting.domain.model.VoteChoice;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
 
 @Entity
-@Table(name = "votes")
+@Table(name = "votes", uniqueConstraints = {
+    @UniqueConstraint(
+        name = "uk_session_agenda_affiliated",
+        columnNames = {"session_id", "agenda_id", "affiliated_id"}
+    )
+})
 @Data
 @Builder
 @NoArgsConstructor

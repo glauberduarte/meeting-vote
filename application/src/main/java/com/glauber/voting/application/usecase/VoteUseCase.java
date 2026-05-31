@@ -8,6 +8,7 @@ import com.glauber.voting.domain.model.VoteResult;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,12 +21,32 @@ public class VoteUseCase {
     }
 
     public VoteDto.Response execute(Long sessionId, VoteDto.Request request) {
+        // Valida e normaliza cpf: remove caracteres não numéricos e valida CPF dígitos
+        if (request.getCpf() == null) {
+            throw new IllegalArgumentException("CPF não pode ser nulo.");
+        }
+        String normalizedCPF = request.getCpf().replaceAll("\\D+", "");
+        if (!normalizedCPF.matches("\\d{11}")) {
+            throw new IllegalArgumentException("CPF inválido: deve conter 11 dígitos");
+        }
+
         // Converte DTO para domínio
         VoteChoice voteChoice = VoteChoice.fromString(request.getChoice());
-        Vote vote = new Vote(null, sessionId, request.getAgendaId(), request.getAffiliatedId(), voteChoice);
+        Vote vote = new Vote(null, sessionId, request.getAgendaId(), normalizedCPF, voteChoice);
 
-        // Regras de negócio intencionalmente omitidas (serão ajustadas manualmente)
+        // Validações básicas
+        Objects.requireNonNull(vote, "vote não pode ser vazio ou nulo");
+        if (vote.getAgendaId() == null) {
+            throw new IllegalArgumentException("Vote agendaId não pode ser vazio ou nulo");
+        }
 
+        if (vote.getSessionId() == null) {
+            throw new IllegalArgumentException("Vote sessionId não pode ser vazio ou nulo");
+        }
+
+        if (vote.getAffiliatedId() == null) {
+            throw new IllegalArgumentException("CPF não pode ser vazio ou nulo");
+        }
         // Persiste via Boundary
         Vote saved = voteBoundary.save(vote);
 
@@ -34,7 +55,7 @@ public class VoteUseCase {
                 .id(saved.getId())
                 .sessionId(saved.getSessionId())
                 .agendaId(saved.getAgendaId())
-                .affiliatedId(saved.getAffiliatedId())
+                .cpf(saved.getAffiliatedId())
                 .choice(saved.getChoice() != null ? saved.getChoice().toString() : null)
                 .build();
     }

@@ -3,6 +3,7 @@ package com.glauber.voting.infrastructure.controller.v1;
 import com.glauber.voting.application.dto.VoteDto;
 import com.glauber.voting.application.exception.SessionException;
 import com.glauber.voting.application.usecase.VoteUseCase;
+import com.glauber.voting.infrastructure.exception.CpfValidatorException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,12 +36,17 @@ public class VoteController {
                     content = @Content(schema = @Schema(implementation = VoteDto.Response.class))),
             @ApiResponse(responseCode = "404", description = "Sessão ou pauta não encontrada", content = @Content)
     })
-    public ResponseEntity<VoteDto.Response> submitVote(
+    public ResponseEntity<?> submitVote(
             @Parameter(description = "ID da sessão") @PathVariable Long id,
             @Valid @RequestBody(required = true) VoteDto.Request request) {
 
-        VoteDto.Response response = voteUseCase.execute(id, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        try {
+            VoteDto.Response response = voteUseCase.execute(id, request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalArgumentException | CpfValidatorException | SessionException ex) {
+            java.util.Map<String, String> body = Collections.singletonMap("warning", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
     }
 
     @GetMapping("/{id}/results")

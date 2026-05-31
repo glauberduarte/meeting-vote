@@ -163,6 +163,10 @@ Validar alteração para suportar a estrutura
 
 http://localhost:8080/swagger-ui/index.html
 
+## Validação CPF
+  Como não consegui utilizar o heroku, utilizei a API https://api.cpfhub.io/cpf/{cpf}, porém para ser utilizada é necessário cadastro no site e gerar um token, para testar o serviço é necessário setar a variável de ambiente API_KEY com o token gerado no site.
+  Nesse caso a validação ficou um pouco divergente ao solicitado, mas o serviço está preparado para resolver a validação utilizando a API do heroku, caso seja necessário.
+
 ## Execução Local
 
 #### 1. Subir banco local:
@@ -193,6 +197,12 @@ curl -X POST http://localhost:8080/api/v1/agendas \
   "title": "Aprovação do Balanço Financeiro 2025"
 }
 ```
+```json
+{
+  "id": 2,
+  "title": "Aprovação rateio central"
+}
+```
 
 #### Exemplo de executar testes para AgendaControllerTest
 
@@ -211,11 +221,11 @@ curl -X POST http://localhost:8080/api/v1/session \
   "agendas": [
       {
         "id": 1,
-        "title": "Pauta 1"
+        "title": "Aprovação do Balanço Financeiro 2025"
       },
       {
         "id": 2,
-        "title": "Pauta 2"
+        "title": "Aprovação rateio central"
       }
   ]
 }'
@@ -250,7 +260,7 @@ curl -X POST http://localhost:8080/api/v1/session \
     },
     {
       "id": 2,
-      "title": "Aprovação do Balanço Financeiro 2025"
+      "title": "Aprovação rateio central"
     }
   ]
 }
@@ -259,10 +269,11 @@ curl -X POST http://localhost:8080/api/v1/session \
 #### Exemplo de chamada para votar em uma pauta
 
 ```cmd
-curl -X POST http://localhost:8080/api/v1/agendas/1/votes \
+curl -X POST http://localhost:8080/api/v1/vote/1 \
 -H "Content-Type: application/json" \
 -d '{
-  "voteChoice": "SIM",
+  "agendaId": 1,
+  "choice": "SIM",
   "cpf": "19839091069"
 }'
 ```
@@ -327,5 +338,5 @@ curl -X GET http://localhost:8080/api/v1/session/1/agendas
   - teste: https://www.cpfhub.io/blog/melhores-apis-gratuitas-consulta-cpf-desenvolvedores
   - prod: https://user-info.herokuapp.com/users/{cpf}
 - Tratar performance (cache local) e monitoramento
-- Revisão documentação e testes unitários e documentar testes de homologação
+- Revisão documentação, testes unitários, padronização de mensagens de erro, e documentar testes de homologação
 

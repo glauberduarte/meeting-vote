@@ -29,12 +29,6 @@ public class SessionBoundaryImpl implements SessionBoundary {
 
     @Override
     public Session save(Session session) {
-        // Validações básicas
-        Objects.requireNonNull(session, "session must not be null");
-        if (session.getTitle() == null || session.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Session title must not be blank");
-        }
-
         List<AgendaEntity> agendaEntities = session.getAgendas().stream()
                 .map(a -> agendaRepository.getReferenceById(a.getId()))
                 .collect(Collectors.toList());
@@ -52,12 +46,12 @@ public class SessionBoundaryImpl implements SessionBoundary {
         SessionEntity savedEntity = repository.save(entityToSave);
 
         // Mapeia Entidade JPA -> Domínio
-        return new Session(savedEntity.getId(), savedEntity.getAssemblyTitle(), session.getAgendas(), savedEntity.getDurationInMinutes());
+        return new Session(savedEntity.getId(), savedEntity.getAssemblyTitle(), session.getAgendas(), savedEntity.getDurationInMinutes(), savedEntity.getOpeningTime(), savedEntity.getClosingTime());
     }
 
     @Override
     public Session findById(Long id) {
-        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(id, "id não pode ser nulo.");
         SessionEntity entity = repository.findById(id)
                 .orElseThrow(() -> new SessionException("Session not found: " + id));
 
@@ -65,6 +59,6 @@ public class SessionBoundaryImpl implements SessionBoundary {
                 .map(a -> new Agenda(a.getId(), a.getTitle()))
                 .collect(Collectors.toList());
 
-        return new Session(entity.getId(), entity.getAssemblyTitle(), agendas, entity.getDurationInMinutes());
+        return new Session(entity.getId(), entity.getAssemblyTitle(), agendas, entity.getDurationInMinutes(), entity.getOpeningTime(), entity.getClosingTime());
     }
 }

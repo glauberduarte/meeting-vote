@@ -7,6 +7,7 @@ import com.glauber.voting.domain.model.Session;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,15 +20,19 @@ public class SessionUseCase {
     }
 
     public SessionDto.Response execute(SessionDto.Request request) {
-        // 1. Converte o DTO de entrada para uma Entidade de Domínio
-        Session session = new Session(null, request.getTitle(), SessionDto.toDomain(request.getAgendas()), request.getDurationInMinutes());
+        // Converte o DTO de entrada para uma Entidade de Domínio
+        Session session = new Session(null, request.getTitle(), SessionDto.toDomain(request.getAgendas()), request.getDurationInMinutes(), null,null);
 
-        // 2. Executa possíveis regras de negócio do caso de uso
+        // Validações básicas
+        Objects.requireNonNull(session, "session não pode ser nulo.");
+        if (session.getTitle() == null || session.getTitle().isBlank()) {
+            throw new IllegalArgumentException("Session title não pode ser vazio.");
+        }
 
-        // 3. Salva através do Boundary (Abstração da infraestrutura)
+        // Salva através do Boundary (Abstração da infraestrutura)
         Session savedSession = sessionBoundary.save(session);
 
-        // 4. Retorna o DTO de resposta esperado pela camada de entrega
+        // Retorna o DTO de resposta esperado pela camada de entrega
         return SessionDto.Response.builder()
                 .id(savedSession.getId())
                 .title(savedSession.getTitle())

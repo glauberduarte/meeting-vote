@@ -21,15 +21,15 @@ public class Session {
     @Getter
     private final LocalDateTime closingTime;
 
-    public Session(Long id, String title, List<Agenda> agendas, Integer durationInMinutes) {
+    public Session(Long id, String title, List<Agenda> agendas, Integer durationInMinutes, LocalDateTime openingTime, LocalDateTime closingTime) {
         this.id = id;
         this.title = title;
         this.agendas = agendas;
         this.durationInMinutes = durationInMinutes;
         // Use UTC-3 consistently for all LocalDateTime calculations
-        this.openingTime = ZonedDateTime.now(ZoneOffset.ofHours(-3)).toLocalDateTime();
+        this.openingTime = openingTime != null ? openingTime : ZonedDateTime.now(ZoneOffset.ofHours(-3)).toLocalDateTime();
         // Caso não seja informado o tempo, a sessão dura 1 minuto
-        this.closingTime = this.openingTime.plusMinutes(durationInMinutes != null ? durationInMinutes : 1);
+        this.closingTime = closingTime != null ? closingTime : this.openingTime.plusMinutes(durationInMinutes != null ? durationInMinutes : 1);
     }
 
     public boolean isOpen() {

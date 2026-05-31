@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,9 +31,9 @@ class SessionUseCaseTest {
     @DisplayName("Deve retornar as pautas de uma sessão")
     void shouldReturnAgendas() {
         var agendasDomain = List.of(new Agenda(1L, "Pauta 1"));
-        var sessionDomain = new Session(1L, "Sessao 1", agendasDomain, 5);
+        var sessionDomainReturn = new Session(1L, "Sessao 1", agendasDomain, 5, LocalDateTime.now(ZoneId.of("UTC-3")), LocalDateTime.now(ZoneId.of("UTC-3")).plusMinutes(5));
 
-        when(sessionBoundary.findById(1L)).thenReturn(sessionDomain);
+        when(sessionBoundary.findById(1L)).thenReturn(sessionDomainReturn);
 
         SessionDto.AgendasResponse response = sessionUseCase.getAgendas(1L);
 

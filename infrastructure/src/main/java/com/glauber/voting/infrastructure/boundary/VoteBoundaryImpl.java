@@ -4,6 +4,8 @@ import com.glauber.voting.application.boundary.VoteBoundary;
 import com.glauber.voting.application.exception.SessionException;
 import com.glauber.voting.domain.model.Vote;
 import com.glauber.voting.domain.model.VoteResult;
+import com.glauber.voting.infrastructure.client.CpfValidator;
+import com.glauber.voting.infrastructure.exception.CpfValidatorException;
 import com.glauber.voting.infrastructure.persistence.entity.VoteEntity;
 import com.glauber.voting.infrastructure.persistence.repository.VoteRepository;
 import com.glauber.voting.application.boundary.SessionBoundary;
@@ -11,12 +13,14 @@ import com.glauber.voting.domain.model.Session;
 import com.glauber.voting.domain.model.Agenda;
 import com.glauber.voting.domain.model.VoteChoice;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,26 +33,27 @@ public class VoteBoundaryImpl implements VoteBoundary {
 
     private final VoteRepository repository;
     private final SessionBoundary sessionBoundary;
+    private final CpfValidator cpfValidator;
 
-    public VoteBoundaryImpl(VoteRepository repository, SessionBoundary sessionBoundary) {
+    public VoteBoundaryImpl(VoteRepository repository, SessionBoundary sessionBoundary, CpfValidator cpfValidator) {
         this.repository = repository;
         this.sessionBoundary = sessionBoundary;
+        this.cpfValidator = cpfValidator;
     }
 
     @Override
     public Vote save(Vote vote) {
-        // Validações básicas
-        Objects.requireNonNull(vote, "vote must not be null");
-        if (vote.getAgendaId() == null) {
-            throw new IllegalArgumentException("Vote agendaId must not be blank");
+        // Busca em componente externo de validação de CPF, por esse motivo está na infrastructure
+        validateCPF(vote.getAffiliatedId());
+
+        boolean affiliateAlreadyVoted = repository.existsByAffiliatedIdAndSessionIdAndAgendaId(vote.getAffiliatedId(), vote.getSessionId(), vote.getAgendaId());
+        if (affiliateAlreadyVoted) {
+            throw new CpfValidatorException("Associado já votou nessa pauta e assembleia.");
         }
 
-        if (vote.getSessionId() == null) {
-            throw new IllegalArgumentException("Vote sessionId must not be blank");
-        }
-
-        if (vote.getAffiliatedId() == null) {
-            throw new IllegalArgumentException("Vote affiliatedId must not be blank");
+        Session session = sessionBoundary.findById(vote.getSessionId());
+        if (!session.isOpen()) {
+            throw new SessionException("Assembléia finalizada, não pode mais receber votos.");
         }
 
         // Mapeia Domínio -> Entidade JPA
@@ -68,25 +73,22 @@ public class VoteBoundaryImpl implements VoteBoundary {
 
     @Override
     public List<VoteResult> countResultsBySession(Long sessionId) {
-        Objects.requireNonNull(sessionId, "sessionId must not be null");
+        Objects.requireNonNull(sessionId, "sessionId não pode ser nulo.");
 
-        // 1 - Recupera a sessão e valida se está finalizada (considerando UTC-3)
         Session session = sessionBoundary.findById(sessionId);
-        LocalDateTime now = ZonedDateTime.now(ZoneOffset.ofHours(-3)).toLocalDateTime();
-
         // Se a sessão ainda não foi finalizada, lança exceção para sinalizar warning
-        if (session.getClosingTime() == null || session.getClosingTime().isAfter(now)) {
+        if (session.isOpen()) {
             throw new SessionException("Sessão ainda não finalizada");
         }
 
-        // 2 - Buscar todos os votos das agendas da sessão
-        java.util.List<Long> agendaIds = session.getAgendas().stream()
+        // Buscar todos os votos das agendas da sessão
+        List<Long> agendaIds = session.getAgendas().stream()
                 .map(Agenda::getId)
                 .collect(Collectors.toList());
 
-        java.util.List<VoteEntity> votes = repository.findBySessionIdAndAgendaIdIn(sessionId, agendaIds);
+        List<VoteEntity> votes = repository.findBySessionIdAndAgendaIdIn(sessionId, agendaIds);
 
-        // 3 - Sumarizar sim e nao por agenda, e garantir que retornamos todas as agendas da sessão
+        // Sumarizar sim e nao por agenda, e garantir que retornamos todas as agendas da sessão
         Map<Long, VoteResult> accumulator = new HashMap<>();
         for (Long agendaId : agendaIds) {
             accumulator.put(agendaId, new VoteResult(agendaId, 0L, 0L));
@@ -114,5 +116,11 @@ public class VoteBoundaryImpl implements VoteBoundary {
         return accumulator.values().stream().collect(Collectors.toList());
     }
 
-
+    private void validateCPF(String cpf) {
+        try {
+            cpfValidator.isValid(cpf);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("CPF inválido.");
+        }
+    }
 }

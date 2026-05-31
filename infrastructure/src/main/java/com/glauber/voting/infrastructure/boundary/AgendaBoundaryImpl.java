@@ -22,9 +22,9 @@ public class AgendaBoundaryImpl implements AgendaBoundary {
     @Override
     public Agenda save(Agenda agenda) {
         // Validações básicas
-        Objects.requireNonNull(agenda, "agenda must not be null");
+        Objects.requireNonNull(agenda, "agenda não pode ser nulo.");
         if (agenda.getTitle() == null || agenda.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Agenda title must not be blank");
+            throw new IllegalArgumentException("Agenda title não pode ser vazio.");
         }
 
         // Mapeia Domínio -> Entidade JPA

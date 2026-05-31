@@ -1,3 +1,8 @@
+validator:
+  cpf:
+    url: https://api.cpfhub.io/cpf/
+    header: x-api-key
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/meeting-vote

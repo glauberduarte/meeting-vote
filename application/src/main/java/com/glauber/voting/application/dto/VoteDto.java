@@ -15,7 +15,7 @@ public class VoteDto {
     @Builder
     public static class Request {
         private Long agendaId;
-        private String affiliatedId;
+        private String cpf;
         private String choice; // sim ou não
     }
 
@@ -25,7 +25,7 @@ public class VoteDto {
         private Long id;
         private Long sessionId;
         private Long agendaId;
-        private String affiliatedId;
+        private String cpf;
         private String choice;
     }
 
